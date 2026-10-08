@@ -18,7 +18,40 @@ def ship_color(fuel_ratio):
 
 def on_landing(score):
     """Called after a successful landing with the points just earned; add fireworks or bonuses here."""
-    pass
+    screen = pygame.display.get_surface()
+    if screen is None:
+        return
+    width, height = screen.get_size()
+    background = screen.copy()
+    clock = pygame.time.Clock()
+    bursts = max(2, min(8, 1 + int(score) // 150))  # higher scores get more fireworks
+    palette = [(255, 220, 80), (255, 120, 90), (120, 240, 140), (120, 200, 255), (240, 140, 255)]
+    particles, spawned, frame = [], 0, 0
+    while (spawned < bursts or particles) and frame < 120:
+        if pygame.event.peek(pygame.QUIT):  # leave QUIT in the queue for the main loop
+            break
+        pygame.event.pump()
+        dt = min(clock.tick(60) / 1000, 0.05)
+        if spawned < bursts and frame % 5 == 0:
+            cx, cy = random.randint(120, width - 120), random.randint(80, height // 2)
+            color = random.choice(palette)
+            for _ in range(28):
+                angle, speed = random.uniform(0, math.tau), random.uniform(40, 200)
+                life = random.uniform(0.5, 0.9)
+                particles.append([cx, cy, math.cos(angle) * speed, math.sin(angle) * speed, life, life, color])
+            spawned += 1
+        for p in particles:
+            p[0] += p[2] * dt
+            p[1] += p[3] * dt
+            p[3] += 120 * dt
+            p[4] -= dt
+        particles = [p for p in particles if p[4] > 0]
+        screen.blit(background, (0, 0))
+        for x, y, _, _, life, max_life, color in particles:
+            fade = life / max_life
+            pygame.draw.circle(screen, tuple(int(c * fade) for c in color), (int(x), int(y)), 3)
+        pygame.display.flip()
+        frame += 1
 
 
 def bonus_life_threshold():
