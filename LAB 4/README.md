@@ -4,6 +4,9 @@ This project is a single-file Lunar Lander-lite clone using **Pygame**. It intro
 
 ---
 
+## CHAT HISTORY LINK
+## https://claude.ai/share/e3bf0a90-901d-4460-95aa-7796f81b719b
+
 ## What's Provided
 
 A working Lunar Lander-lite game with:
