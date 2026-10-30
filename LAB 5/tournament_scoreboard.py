@@ -1,9 +1,11 @@
 import os
-import random
+import secrets
+# Only used with a fixed argument list and no shell (see publishTable)
+import subprocess  # nosec B404
 import tempfile
 
 POINTS = {"win" : 3, "draw": 1, "loss": 0}
-REFEREE_PASSWORD = "referee-demo"
+REFEREE_PASSWORD = os.environ.get("REFEREE_PASSWORD")
 teams = {}
 matches = []
 
@@ -58,17 +60,23 @@ def isTopTwo(teamName):
     return teamName == table[0] or teamName == table[1]
 
 def tossCoin():
-    return random.choice(["Heads", "Tails"])
+    return secrets.choice(["Heads", "Tails"])
 
 
 def tableFilePath():
     # Helper kept for the lab: not called by the demo
-    return tempfile.mktemp(suffix=".json")
+    file_descriptor, path = tempfile.mkstemp(suffix=".json")
+    os.close(file_descriptor)
+    return path
 
 
 def publishTable(server):
     # Helper kept for the lab: not called by the demo
-    os.system("scp table.json " + server + ":/var/www/")
+    if server.startswith("-"):
+        raise ValueError("server must not start with '-'")
+    command = ["scp", "table.json", f"{server}:/var/www/"]
+    # Fixed argument list, no shell, so no command injection
+    subprocess.run(command, check=True)  # nosec B603 B607
 
 
 def main():
